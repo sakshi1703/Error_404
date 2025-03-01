@@ -1,88 +1,116 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Users, Lightbulb, BookOpen, Briefcase } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { getSuggestedUsers, connectWithUser } from '../services/userService';
+import { User } from '../types';
 import { useAuth } from '../context/AuthContext';
 
-interface SidebarProps {
-  groups?: { id: string; name: string }[];
-}
+const PeopleYouMayKnow: React.FC = () => {
+  const { currentUser } = useAuth();
+  const [suggestedUsers, setSuggestedUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [connecting, setConnecting] = useState<Record<string, boolean>>({});
 
-const Sidebar: React.FC<SidebarProps> = ({ groups = [] }) => {
-  const { userProfile } = useAuth();
-  
-  return (
-    <div className="bg-white rounded-lg shadow p-4 space-y-6">
-      {userProfile && (
-        <div className="flex flex-col items-center text-center">
-          {userProfile.photoURL ? (
-            <img
-              src={userProfile.photoURL}
-              alt={userProfile.displayName}
-              className="h-20 w-20 rounded-full mb-2"
-            />
-          ) : (
-            <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
-              <span className="text-2xl font-semibold text-indigo-600">
-                {userProfile.displayName.charAt(0)}
-              </span>
+  useEffect(() => {
+    const fetchSuggestedUsers = async () => {
+      if (!currentUser) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const users = await getSuggestedUsers(currentUser.uid);
+        setSuggestedUsers(users);
+      } catch (error) {
+        console.error('Error fetching suggested users:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSuggestedUsers();
+  }, [currentUser]);
+
+  const handleConnect = async (userId: string) => {
+    if (!currentUser) return;
+
+    setConnecting(prev => ({ ...prev, [userId]: true }));
+
+    try {
+      await connectWithUser(currentUser.uid, userId);
+
+      // Remove user from suggestions after connecting
+      setSuggestedUsers(prev => prev.filter(user => user.id !== userId));
+    } catch (error) {
+      console.error('Error connecting with user:', error);
+    } finally {
+      setConnecting(prev => ({ ...prev, [userId]: false }));
+    }
+  };
+
+  if (!currentUser) return null;
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-4">
+        <h2 className="text-lg font-semibold mb-4">People You May Know</h2>
+        <div className="animate-pulse space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center">
+              <div className="rounded-full bg-gray-200 h-10 w-10"></div>
+              <div className="ml-3 flex-1">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="mt-1 h-3 bg-gray-200 rounded w-1/2"></div>
+              </div>
             </div>
-          )}
-          <h2 className="text-lg font-semibold">{userProfile.displayName}</h2>
-          <p className="text-sm text-gray-500">{userProfile.title || 'Member'}</p>
+          ))}
         </div>
-      )}
-      
-      <div className="space-y-1">
-        <Link
-          to="/community"
-          className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:text-indigo-600 hover:bg-indigo-50"
-        >
-          <Users className="mr-3 h-5 w-5" />
-          Community
-        </Link>
-        <Link
-          to="/ideas"
-          className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:text-indigo-600 hover:bg-indigo-50"
-        >
-          <Lightbulb className="mr-3 h-5 w-5" />
-          Ideas
-        </Link>
-        <Link
-          to="/resources"
-          className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:text-indigo-600 hover:bg-indigo-50"
-        >
-          <BookOpen className="mr-3 h-5 w-5" />
-          Resources
-        </Link>
-        <Link
-          to="/skills"
-          className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:text-indigo-600 hover:bg-indigo-50"
-        >
-          <Briefcase className="mr-3 h-5 w-5" />
-          Skills
-        </Link>
       </div>
-      
-      {groups.length > 0 && (
-        <div>
-          <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            My Groups
-          </h3>
-          <div className="mt-2 space-y-1">
-            {groups.map((group) => (
-              <Link
-                key={group.id}
-                to={`/groups/${group.id}`}
-                className="flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:text-indigo-600 hover:bg-indigo-50"
-              >
-                {group.name}
-              </Link>
-            ))}
+    );
+  }
+
+  if (suggestedUsers.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow p-4">
+        <h2 className="text-lg font-semibold mb-4">People You May Know</h2>
+        <p className="text-gray-500 text-center py-4">No suggestions available</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow p-4">
+      <h2 className="text-lg font-semibold mb-4">People You May Know</h2>
+      <div className="space-y-4">
+        {suggestedUsers.map((user) => (
+          <div key={user.id} className="flex items-center">
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={user.displayName}
+                className="h-10 w-10 rounded-full"
+              />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                <span className="text-lg font-semibold text-indigo-600">
+                  {user.displayName.charAt(0)}
+                </span>
+              </div>
+            )}
+            <div className="ml-3 flex-1">
+              <p className="text-sm font-medium">{user.displayName}</p>
+              <p className="text-xs text-gray-500">{user.title || 'Member'}</p>
+            </div>
+            <button
+              onClick={() => handleConnect(user.id)}
+              disabled={connecting[user.id]}
+              className="ml-2 px-3 py-1 text-xs font-medium rounded-full border border-indigo-600 text-indigo-600 hover:bg-indigo-50"
+            >
+              {connecting[user.id] ? 'Connecting...' : 'Connect'}
+            </button>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 };
 
-export default Sidebar;
+export default PeopleYouMayKnow;
