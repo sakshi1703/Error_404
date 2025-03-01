@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
 import { updateUserProfile } from '../services/userService';
 import { User } from '../types';
-import "./Profile.css"
+import "./Profile.css";
 
 const Profile: React.FC = () => {
   const { currentUser, userProfile, loading } = useAuth();
@@ -38,9 +38,11 @@ const Profile: React.FC = () => {
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
+
     setIsSaving(true);
     setError('');
     setSuccess('');
+
     try {
       const newProfile: Partial<User> = {
         displayName,
@@ -50,6 +52,7 @@ const Profile: React.FC = () => {
         email: currentUser.email || '',
         connections: 0,
       };
+
       await updateUserProfile(currentUser.uid, newProfile);
       setSuccess('Profile saved successfully');
       setIsEditing(false);
@@ -154,7 +157,6 @@ const Profile: React.FC = () => {
               <p className="text-sm text-gray-600 italic">{bio || 'No bio added'}</p>
               <p className="mt-2 text-sm text-gray-600">{currentUser?.email}</p>
               <p className="mt-2 text-sm text-gray-600">{title || 'Not specified'}</p>
-              <p className="mt-2 text-sm text-gray-600">Connections: {userProfile?.connections || 0}</p>
               <button
                 onClick={() => setIsEditing(true)}
                 className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
