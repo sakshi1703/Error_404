@@ -68,11 +68,11 @@ const Navbar: React.FC = () => {
                   </button>
                   <div className="ml-3 relative flex items-center">
                     <Link to="/profile">
-                      {userProfile?.photoURL ? (
+                      {userProfile?.profilePic ? (
                         <img
-                          className="h-8 w-8 rounded-full"
-                          src={userProfile.photoURL}
-                          alt={userProfile.displayName}
+                          className="h-8 w-8 rounded-full object-cover"
+                          src={userProfile.profilePic} // Updated to show uploaded profile picture
+                          alt={userProfile.displayName || "User Profile"}
                         />
                       ) : (
                         <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
