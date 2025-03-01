@@ -1,4 +1,4 @@
-import { ref, get, query, orderByChild, limitToLast, update } from 'firebase/database';
+import { ref, get, update, set } from 'firebase/database';
 import { database } from '../firebase/config';
 import { User } from '../types';
 
@@ -39,23 +39,26 @@ export const updateUserProfile = async (userId: string, updates: Partial<User>) 
 
 export const getSuggestedUsers = async (currentUserId: string, limit = 3) => {
   try {
-    const usersRef = query(
-      ref(database, 'users'),
-      orderByChild('connections'),
-      limitToLast(limit + 1) // Fetch one extra to filter out current user if needed
-    );
-    
+    // Fetch all users
+    const usersRef = ref(database, 'users');
     const snapshot = await get(usersRef);
     const users: User[] = [];
     
-    if (snapshot.exists()) {
-      snapshot.forEach((childSnapshot) => {
-        const user = childSnapshot.val() as User;
-        if (user.id !== currentUserId) {
-          users.push(user);
-        }
-      });
-    }
+    if (!snapshot.exists()) return [];
+    
+    const allUsers = snapshot.val();
+    
+    // Fetch connected users
+    const connectionsRef = ref(database, `connections/${currentUserId}`);
+    const connectionsSnapshot = await get(connectionsRef);
+    const connectedUserIds = connectionsSnapshot.exists() ? Object.keys(connectionsSnapshot.val()) : [];
+    
+    // Exclude connected users and self
+    Object.entries(allUsers).forEach(([uid, user]) => {
+      if (uid !== currentUserId && !connectedUserIds.includes(uid)) {
+        users.push({ id: uid, ...user });
+      }
+    });
     
     return users.slice(0, limit);
   } catch (error) {
@@ -66,27 +69,13 @@ export const getSuggestedUsers = async (currentUserId: string, limit = 3) => {
 
 export const connectWithUser = async (currentUserId: string, targetUserId: string) => {
   try {
-    // Update current user's connections
-    const currentUserRef = ref(database, `users/${currentUserId}`);
-    const currentUserSnapshot = await get(currentUserRef);
+    // Store connection for the current user
+    const connectionRef = ref(database, `connections/${currentUserId}/${targetUserId}`);
+    await set(connectionRef, { connectedAt: new Date().toISOString() });
     
-    if (currentUserSnapshot.exists()) {
-      const currentUser = currentUserSnapshot.val() as User;
-      await update(currentUserRef, { 
-        connections: (currentUser.connections || 0) + 1 
-      });
-    }
-    
-    // Update target user's connections
-    const targetUserRef = ref(database, `users/${targetUserId}`);
-    const targetUserSnapshot = await get(targetUserRef);
-    
-    if (targetUserSnapshot.exists()) {
-      const targetUser = targetUserSnapshot.val() as User;
-      await update(targetUserRef, { 
-        connections: (targetUser.connections || 0) + 1 
-      });
-    }
+    // Store reverse connection for the target user
+    const reverseConnectionRef = ref(database, `connections/${targetUserId}/${currentUserId}`);
+    await set(reverseConnectionRef, { connectedAt: new Date().toISOString() });
     
     return true;
   } catch (error) {
