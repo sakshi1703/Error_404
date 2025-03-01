@@ -8,20 +8,20 @@ import { User } from '../types';
 const Profile: React.FC = () => {
   const { currentUser, userProfile, loading } = useAuth();
   const navigate = useNavigate();
-  
+
   const [displayName, setDisplayName] = useState('');
   const [title, setTitle] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  
+
   useEffect(() => {
     if (!loading && !currentUser) {
       navigate('/login');
       return;
     }
-    
+
     if (userProfile) {
       setDisplayName(userProfile.displayName || '');
       setTitle(userProfile.title || '');
@@ -29,16 +29,15 @@ const Profile: React.FC = () => {
       setIsEditing(true); // If no profile, allow user to add one
     }
   }, [currentUser, loading, navigate, userProfile]);
-  
+
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!currentUser) return;
-    
+
     setIsSaving(true);
     setError('');
     setSuccess('');
-    
+
     try {
       const newProfile: Partial<User> = {
         displayName,
@@ -46,7 +45,7 @@ const Profile: React.FC = () => {
         email: currentUser.email || '',
         connections: 0,
       };
-      
+
       await updateUserProfile(currentUser.uid, newProfile);
       setSuccess('Profile saved successfully');
       setIsEditing(false);
@@ -57,7 +56,7 @@ const Profile: React.FC = () => {
       setIsSaving(false);
     }
   };
-  
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -68,30 +67,32 @@ const Profile: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-10">
         <div className="max-w-3xl mx-auto">
           <div className="bg-white shadow overflow-hidden sm:rounded-lg">
             <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">Profile Information</h3>
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                Profile Information
+              </h3>
             </div>
-            
+
             {error && (
               <div className="mx-4 my-2 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
                 {error}
               </div>
             )}
-            
+
             {success && (
               <div className="mx-4 my-2 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
                 {success}
               </div>
             )}
-            
+
             {isEditing ? (
               <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
                 <form onSubmit={handleSaveProfile} className="space-y-6">
@@ -108,7 +109,7 @@ const Profile: React.FC = () => {
                       required
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="title" className="block text-sm font-medium text-gray-700">
                       Title / Profession
@@ -123,7 +124,7 @@ const Profile: React.FC = () => {
                       required
                     />
                   </div>
-                  
+
                   <div className="flex justify-end space-x-3">
                     <button
                       type="button"
@@ -149,30 +150,30 @@ const Profile: React.FC = () => {
             ) : (
               <div className="border-t border-gray-200">
                 <dl>
-                  <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Display Name</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {userProfile?.displayName}
-                    </dd>
-                  </div>
-                  <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Email address</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {userProfile?.email}
-                    </dd>
-                  </div>
-                  <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Title / Profession</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {userProfile?.title || 'Not specified'}
-                    </dd>
-                  </div>
-                  <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                    <dt className="text-sm font-medium text-gray-500">Connections</dt>
-                    <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                      {userProfile?.connections || 0}
-                    </dd>
-                  </div>
+                  {userProfile ? (
+                    <>
+                      <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-gray-500">Display Name</dt>
+                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                          {userProfile.displayName}
+                        </dd>
+                      </div>
+                      <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-gray-500">Email address</dt>
+                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                          {userProfile.email}
+                        </dd>
+                      </div>
+                      <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt className="text-sm font-medium text-gray-500">Title / Profession</dt>
+                        <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                          {userProfile.title || 'Not specified'}
+                        </dd>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-5 text-gray-500">No profile data available.</div>
+                  )}
                 </dl>
               </div>
             )}
