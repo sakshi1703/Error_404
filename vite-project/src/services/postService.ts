@@ -1,8 +1,11 @@
 import { ref, push, set, get, update, query, orderByChild, limitToLast,onValue } from 'firebase/database';
 import { database } from '../firebase/config';
 import { Post, Comment } from '../types';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { database } from '../firebase/config';
 
 export const createPost = async (userId: string, content: string, authorName: string, authorTitle: string, authorPhotoURL: string, tags: string[] = [], type: 'idea' | 'resource' | '' = '') => {
+  
   try {
     const postsRef = ref(database, 'posts');
     const newPostRef = push(postsRef);
@@ -51,6 +54,63 @@ export const createPost = async (userId: string, content: string, authorName: st
     throw error;
   }
 };
+
+export const uploadImage = async (file: File): Promise<string> => {
+  try {
+    const fileRef = storageRef(storage, `post_images/${Date.now()}_${file.name}`);
+    const snapshot = await uploadBytes(fileRef, file); // Upload the file
+    const downloadURL = await getDownloadURL(snapshot.ref); // Get URL
+    return downloadURL;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    throw error;
+  }
+};
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!currentUser || !userProfile || !content.trim()) return;
+  
+  setIsSubmitting(true);
+
+  try {
+    let imageUrl = '';
+    if (image) {
+      imageUrl = await uploadImage(image); // Upload image and get URL
+    }
+
+    const tagList = tags
+      .split(',')
+      .map(tag => tag.trim())
+      .filter(tag => tag)
+      .map(tag => (tag.startsWith('#') ? tag : `#${tag}`));
+
+    await createPost(
+      currentUser.uid,
+      content,
+      userProfile.displayName,
+      userProfile.title || '',
+      userProfile.photoURL || '',
+      tagList,
+      postType,
+      imageUrl // Add image URL to post
+    );
+
+    setContent('');
+    setTags('');
+    setPostType('');
+    setImage(null); // Reset image
+    document.getElementById('post-form-details')?.classList.add('hidden');
+    alert('Post added successfully!');
+    onPostCreated();
+  } catch (error) {
+    console.error('Error creating post:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
 export const getPosts = async (limit = 20) => {
   try {
