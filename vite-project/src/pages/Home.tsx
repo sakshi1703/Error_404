@@ -130,67 +130,67 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-blue-700">
+    <div className="min-h-screen bg-gray-100 ">
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-10">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-  {/* Left Sidebar */}
-  <div className="hidden lg:block space-y-6">
-    <Sidebar 
-      groups={groups} 
-      onFilterChange={handleFilterChange} 
-    />
-    <div className="mt-6">
-      <MyConnections />
-    </div>
-  </div>
+          {/* Left Sidebar (Sticky) */}
+          <div className="hidden lg:block space-y-6 sticky top-20 h-fit ">
+            <Sidebar 
+              groups={groups} 
+              onFilterChange={handleFilterChange} 
+            />
+            <div className="mt-6">
+              <MyConnections />
+            </div>
+          </div>
 
+          {/* Main Content (Scrollable Posts) */}
+          <div className="lg:col-span-2">
+            <div className="sticky top-20  p-4 z-10 ">
+              <CreatePostForm onPostCreated={handlePostCreated} selectedCategory={selectedCategory} />
+            </div>
 
-          
-          {/* Main Content */}
-          <div className="lg:col-span-2 ">
-            <CreatePostForm onPostCreated={handlePostCreated} selectedCategory={selectedCategory} />
-            
-            {isLoading ? (
-              <div className="space-y-6">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-lg shadow p-4 animate-pulse">
-                    <div className="flex items-center mb-4">
-                      <div className="rounded-full bg-gray-200 h-10 w-10"></div>
-                      <div className="ml-3 flex-1">
-                        <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                        <div className="mt-1 h-3 bg-gray-200 rounded w-1/3"></div>
+            <div className="space-y-4 mt-4" style={{ maxHeight: 'calc(100vh - 16rem)', overflowY: 'auto' }}>
+              {isLoading ? (
+                <div className="space-y-6">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-white rounded-lg shadow p-4 animate-pulse">
+                      <div className="flex items-center mb-4">
+                        <div className="rounded-full bg-gray-200 h-10 w-10"></div>
+                        <div className="ml-3 flex-1">
+                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                          <div className="mt-1 h-3 bg-gray-200 rounded w-1/3"></div>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="h-4 bg-gray-200 rounded"></div>
+                        <div className="h-4 bg-gray-200 rounded"></div>
+                        <div className="h-4 bg-gray-200 rounded w-5/6"></div>
                       </div>
                     </div>
-                    <div className="space-y-3">
-                      <div className="h-4 bg-gray-200 rounded"></div>
-                      <div className="h-4 bg-gray-200 rounded"></div>
-                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : filteredPosts.length > 0 ? (
-              <div className="space-y-4">
-                {filteredPosts.map((post) => (
+                  ))}
+                </div>
+              ) : filteredPosts.length > 0 ? (
+                filteredPosts.map((post) => (
                   <PostCard key={post.id} post={post} />
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-lg shadow p-8 text-center">
-                <h3 className="text-lg font-medium text-gray-900">No posts found</h3>
-                <p className="mt-2 text-gray-500">
-                  {selectedCategory 
-                    ? `No ${selectedCategory} posts available. Be the first to create one!` 
-                    : 'Be the first to share something!'}
-                </p>
-              </div>
-            )}
+                ))
+              ) : (
+                <div className="bg-white rounded-lg shadow p-8 text-center">
+                  <h3 className="text-lg font-medium text-gray-900">No posts found</h3>
+                  <p className="mt-2 text-gray-500">
+                    {selectedCategory 
+                      ? `No ${selectedCategory} posts available. Be the first to create one!` 
+                      : 'Be the first to share something!'}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-          
-          {/* Right Sidebar */}
-          <div className="hidden lg:block">
+
+          {/* Right Sidebar (Sticky) */}
+          <div className="hidden lg:block sticky top-20 h-fit">
             <div className="space-y-6">
               <TrendingTopics />
               <PeopleYouMayKnow />
