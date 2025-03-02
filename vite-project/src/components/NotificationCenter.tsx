@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, X, ExternalLink, Users } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { database } from '../firebase/config';
 import { ref, onValue, update, get } from 'firebase/database';
@@ -145,7 +145,7 @@ const NotificationCenter: React.FC = () => {
         database,
         `groups/${notification.groupId}/notifications/${notificationId}/readBy/${currentUser.uid}`
       );
-      await update(notificationRef, true);
+      await update(notificationRef, { seen: true });
       
       // Also update the notification in our state
       setNotifications(prev => 

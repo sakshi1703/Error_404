@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, User as UserIcon, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from './Sidebar';
-import NotificationCenter from './NotificationCenter'; // Import the notification component
+import NotificationCenter from './NotificationCenter';
 
 const Navbar: React.FC = () => {
   const { currentUser, logout, userProfile } = useAuth();
@@ -32,7 +32,6 @@ const Navbar: React.FC = () => {
       <nav className="bg-white border-b border-gray-200 fixed w-full z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
-            {/* Sidebar Toggle Button (Mobile) */}
             <button
               onClick={() => setIsSidebarOpen(true)}
               className="md:hidden text-gray-700 p-2 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -64,23 +63,22 @@ const Navbar: React.FC = () => {
             <div className="flex items-center">
               {currentUser ? (
                 <>
-                  {/* Replace Bell button with NotificationCenter component */}
                   <NotificationCenter />
-                  
                   <div className="ml-3 relative flex items-center">
-                    <Link to="/profile">
-                      {userProfile?.profilePic ? (
-                        <img
-                          className="h-8 w-8 rounded-full object-cover"
-                          src={userProfile.profilePic}
-                          alt={userProfile.displayName || "User Profile"}
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                          <UserIcon className="h-5 w-5 text-indigo-500" />
-                        </div>
-                      )}
-                    </Link>
+                  <Link to="/profile">
+                    {userProfile && "profilePic" in userProfile ? (
+                      <img
+                        className="h-8 w-8 rounded-full object-cover"
+                        src={(userProfile as { profilePic: string }).profilePic} // Type assertion
+                        alt={userProfile.displayName || "User Profile"}
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <UserIcon className="h-5 w-5 text-indigo-500" />
+                      </div>
+                    )}
+                  </Link>
+
                     <button
                       onClick={handleLogout}
                       className="ml-4 px-3 py-1 text-sm text-gray-700 hover:text-indigo-600"
@@ -104,16 +102,12 @@ const Navbar: React.FC = () => {
         </div>
       </nav>
 
-      {/* Sidebar Overlay (for Mobile) */}
       {isSidebarOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-20" onClick={() => setIsSidebarOpen(false)} />
       )}
 
-      {/* Sidebar Component (Sliding) */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-64'
-        } transition-transform z-30 p-5`}
+        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-64'} transition-transform duration-300 z-30 p-5`}
       >
         <button
           onClick={() => setIsSidebarOpen(false)}
@@ -121,7 +115,6 @@ const Navbar: React.FC = () => {
         >
           <X className="h-6 w-6" />
         </button>
-
         <Sidebar />
       </div>
     </>
