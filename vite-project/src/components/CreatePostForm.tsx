@@ -64,7 +64,7 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onPostCreated }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow mb-6 p-4">
+    <div className="bg-white rounded-lg shadow mb-2 p-4">
       <div className="flex items-center mb-4">
         {userProfile?.photoURL ? (
           <img
