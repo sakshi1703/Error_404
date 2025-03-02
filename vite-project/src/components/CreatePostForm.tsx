@@ -11,7 +11,7 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onPostCreated }) => {
   const { currentUser, userProfile } = useAuth();
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
-  const [postType, setPostType] = useState<'idea' | 'resource' | ''>('');
+  const [postType, setPostType] = useState<'idea' | 'resource' |'skill'| ''>('');
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -191,6 +191,17 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onPostCreated }) => {
                   onChange={() => setPostType('resource')}
                 />
                 <span className="ml-2">Resource</span>
+              </label>
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  className="form-radio text-indigo-600"
+                  name="post-type"
+                  value="resource"
+                  checked={postType === 'skill'}
+                  onChange={() => setPostType('skill')}
+                />
+                <span className="ml-2">Skills</span>
               </label>
               <label className="inline-flex items-center">
                 <input
