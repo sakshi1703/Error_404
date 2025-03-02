@@ -1,6 +1,3 @@
-# Error_404
-
-
 # 🚀 CollabHub - A Firebase-Powered Social Platform
 
 ## 📌 Project Overview
@@ -14,8 +11,7 @@ Social Connect is a modern social networking platform that enables users to shar
 - 🚀 **Trending Topics** (Based on most used tags)
 - 📡 **Real-time Updates** (Listen for new comments dynamically)
 - 🎨 **Modern UI** (Built with Tailwind CSS)
-- **Create groups**(Create groups )
-
+- 📌 **Create Groups** (Create groups and collaborate)
 
 ## 🛠️ Technologies Used
 - **React** (Frontend)
@@ -30,7 +26,7 @@ Social Connect is a modern social networking platform that enables users to shar
  ├── contexts    # Auth & data context providers
  ├── firebase    # Firebase configuration
  ├── pages       # Main application pages
- ├──services     
+ ├── services    # API & service functions
 ```
 
 ### ⚙️ Setup Instructions  
@@ -71,14 +67,10 @@ The app will run locally. Check the terminal output for the URL.
    ```bash
    npm run build
    ```  
-2. Upload the `/dist` folder to [Netlify]([https://app.netlify.com](https://tiny-brioche-c77d15.netlify.app/)/)  
+2. Upload the `/dist` folder to [Netlify](https://tiny-brioche-c77d15.netlify.app/)  
 OR  
-   - Link your GitHub repository to Netlify for automatic deployment.  
+   - Link your GitHub repository to Netlify for automatic deployment.
 
-```
-
-
-
-
-
+### 🌍 Live Demo  
+Check out the live project here: [CollabHub](https://tiny-brioche-c77d15.netlify.app/)
 
