@@ -150,7 +150,7 @@ const Sidebar: React.FC<SidebarProps> = ({ groups = [], onFilterChange = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 space-y-6">
+    <div className="bg-white rounded-lg shadow p-4 space-y-6 ">
       {currentUser && (
         <div className="flex flex-col items-center text-center">
           {userProfile?.profilePic ? (
