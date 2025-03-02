@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import Search from './pages/Search';
+import PostDetail from './pages/PostDetail';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/ideas" element={<Home />} />
           <Route path="/resources" element={<Home />} />
           <Route path="/skills" element={<Home />} />
+          <Route path="/post/:postId" element={<PostDetail />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
