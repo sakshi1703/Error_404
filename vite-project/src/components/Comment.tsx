@@ -9,29 +9,14 @@ const Comment: React.FC<CommentProps> = ({ comment }) => {
   const formatTimestamp = (timestamp: number) => {
     const now = Date.now();
     const diff = now - timestamp;
-    
-    // Less than a minute
-    if (diff < 60000) {
-      return 'just now';
-    }
-    
-    // Less than an hour
-    if (diff < 3600000) {
-      const minutes = Math.floor(diff / 60000);
-      return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
-    }
-    
-    // Less than a day
-    if (diff < 86400000) {
-      const hours = Math.floor(diff / 3600000);
-      return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
-    }
-    
-    // Format as date
-    const date = new Date(timestamp);
-    return date.toLocaleDateString();
+
+    if (diff < 60000) return 'just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)} minutes ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)} hours ago`;
+
+    return new Date(timestamp).toLocaleDateString();
   };
-  
+
   return (
     <div className="flex space-x-3">
       {comment.author.photoURL ? (
