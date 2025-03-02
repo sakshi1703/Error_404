@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Bell, User as UserIcon, Menu, X } from 'lucide-react';
+import { Search, User as UserIcon, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import Sidebar from './Sidebar'; // Import the sidebar component
+import Sidebar from './Sidebar';
+import NotificationCenter from './NotificationCenter'; // Import the notification component
 
 const Navbar: React.FC = () => {
   const { currentUser, logout, userProfile } = useAuth();
@@ -63,15 +64,15 @@ const Navbar: React.FC = () => {
             <div className="flex items-center">
               {currentUser ? (
                 <>
-                  <button className="p-2 text-gray-400 hover:text-gray-500">
-                    <Bell className="h-6 w-6" />
-                  </button>
+                  {/* Replace Bell button with NotificationCenter component */}
+                  <NotificationCenter />
+                  
                   <div className="ml-3 relative flex items-center">
                     <Link to="/profile">
                       {userProfile?.profilePic ? (
                         <img
                           className="h-8 w-8 rounded-full object-cover"
-                          src={userProfile.profilePic} // Updated to show uploaded profile picture
+                          src={userProfile.profilePic}
                           alt={userProfile.displayName || "User Profile"}
                         />
                       ) : (
