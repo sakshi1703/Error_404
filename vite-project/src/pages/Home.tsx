@@ -130,7 +130,7 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-blue-700">
       <Navbar />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-10">
@@ -149,7 +149,7 @@ const Home: React.FC = () => {
 
           
           {/* Main Content */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 ">
             <CreatePostForm onPostCreated={handlePostCreated} selectedCategory={selectedCategory} />
             
             {isLoading ? (

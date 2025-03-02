@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ThumbsUp, MessageSquare, Share2, Send } from 'lucide-react';
+import { ThumbsUp, MessageSquare, Share2, Send ,UserIcon} from 'lucide-react';
 import { Post, Comment as CommentType } from '../types';
 import { likePost, unlikePost, addComment, sharePost, listenForComments } from '../services/postService';
 import { useAuth } from '../context/AuthContext';
@@ -11,7 +11,8 @@ interface PostCardProps {
 }
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
-  const { currentUser } = useAuth();
+  const { userProfile, currentUser } = useAuth();
+  // const { currentUser } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes || 0);
   const [sharesCount, setSharesCount] = useState(post.shares || 0);
@@ -79,13 +80,17 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     <div className="bg-white rounded-xl shadow-lg mb-6 overflow-hidden transition-all duration-200 hover:shadow-xl">
       <div className="p-6">
         <div className="flex items-center mb-4">
-        {post.author && (
-          <img 
-            src={post.author.photoURL || '/default-avatar.png'} 
-            alt={post.author.name || "Unknown User"}
-            className="h-12 w-12 rounded-full object-cover border-2 border-indigo-100"
-          />
-        )}
+        {userProfile?.profilePic ? (
+            <img 
+              src={userProfile.profilePic} 
+              alt={userProfile.displayName || "User Profile"} 
+              className="h-10 w-10 rounded-full mb-2 object-cover" 
+            />
+          ) : (
+            <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
+              <UserIcon className="h-10 w-10 text-indigo-500" />
+            </div>
+          )}
 
 
           <div className="ml-4">

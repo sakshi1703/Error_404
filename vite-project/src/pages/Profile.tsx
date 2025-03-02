@@ -1,34 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import { useAuth } from '../context/AuthContext';
-import { updateUserProfile } from '../services/userService';
-import { User } from '../types';
-import "./Profile.css";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import { useAuth } from "../context/AuthContext";
+import { updateUserProfile } from "../services/userService";
+import { User } from "../types";
 
 const Profile: React.FC = () => {
   const { currentUser, userProfile, loading } = useAuth();
   const navigate = useNavigate();
 
-  const [displayName, setDisplayName] = useState('');
-  const [bio, setBio] = useState('');
-  const [title, setTitle] = useState('');
+  const [displayName, setDisplayName] = useState("");
+  const [bio, setBio] = useState("");
+  const [title, setTitle] = useState("");
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     if (!loading && !currentUser) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
     if (userProfile) {
-      setDisplayName(userProfile.displayName || '');
-      setBio(userProfile.bio || '');
-      setTitle(userProfile.title || '');
+      setDisplayName(userProfile.displayName || "");
+      setBio(userProfile.bio || "");
+      setTitle(userProfile.title || "");
       setProfilePic(userProfile.profilePic || null);
     } else {
       setIsEditing(true);
@@ -40,8 +39,8 @@ const Profile: React.FC = () => {
     if (!currentUser) return;
 
     setIsSaving(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       const newProfile: Partial<User> = {
@@ -49,15 +48,15 @@ const Profile: React.FC = () => {
         bio,
         title,
         profilePic,
-        email: currentUser.email || '',
+        email: currentUser.email || "",
         connections: 0,
       };
 
       await updateUserProfile(currentUser.uid, newProfile);
-      setSuccess('Profile saved successfully');
+      setSuccess("Profile updated successfully!");
       setIsEditing(false);
     } catch (err) {
-      setError('Failed to save profile');
+      setError("Failed to save profile");
       console.error(err);
     } finally {
       setIsSaving(false);
@@ -75,39 +74,46 @@ const Profile: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Navbar />
-        <div className="text-center py-10 text-lg font-semibold">Loading profile...</div>
+        <p className="text-lg font-semibold text-gray-700">Loading profile...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-blue-700">
       <Navbar />
-      <div className="max-w-3xl mx-auto py-10">
-        <div className="bg-white shadow-lg rounded-lg p-6">
+      <div className="max-w-3xl mx-auto py-12 px-6">
+        <div className="bg-white shadow-xl rounded-3xl p-8 mt-20 space-y-6">
           <div className="flex flex-col items-center">
-            <label htmlFor="profile-pic" className="relative cursor-pointer">
+            <div className="relative">
               <img
-                src={profilePic || 'https://via.placeholder.com/150'}
+                src={profilePic || "https://via.placeholder.com/150"}
                 alt="Profile"
-                className="w-32 h-32 rounded-full border-4 border-gray-300 object-cover hover:opacity-80 transition duration-300"
+                className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
               />
-              <input type="file" id="profile-pic" accept="image/*" className="hidden" onChange={handleProfilePicChange} />
+            </div>
+            <label htmlFor="profile-pic" className="relative cursor-pointer group mt-3">
+              <input
+                type="file"
+                id="profile-pic"
+                accept="image/*"
+                className="hidden"
+                onChange={handleProfilePicChange}
+              />
             </label>
-            <p className="text-sm text-gray-500 mt-2 italic">Click to update profile picture</p>
           </div>
 
           {isEditing ? (
-            <form onSubmit={handleSaveProfile} className="space-y-6 mt-6">
+            <form onSubmit={handleSaveProfile} className="space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Display Name</label>
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full mt-1 p-2 border rounded-md focus:ring focus:ring-blue-300"
+                  className="w-full p-3 mt-1 border rounded-xl focus:ring-2 focus:ring-pink-300 focus:outline-none shadow-sm"
                   required
                 />
               </div>
@@ -117,8 +123,8 @@ const Profile: React.FC = () => {
                 <textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="w-full mt-1 p-2 border rounded-md focus:ring focus:ring-blue-300"
-                  rows={3}
+                  className="w-full p-3 mt-1 border rounded-xl focus:ring-2 focus:ring-pink-300 focus:outline-none shadow-sm"
+                  rows={4}
                   placeholder="Tell us about yourself..."
                 />
               </div>
@@ -129,42 +135,45 @@ const Profile: React.FC = () => {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full mt-1 p-2 border rounded-md focus:ring focus:ring-blue-300"
+                  className="w-full p-3 mt-1 border rounded-xl focus:ring-2 focus:ring-pink-300 focus:outline-none shadow-sm"
                   required
                 />
               </div>
 
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-end space-x-4">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 transition"
+                  className="px-6 py-3 text-gray-700 bg-gray-200 rounded-xl hover:bg-gray-300 transition duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                  className="px-6 py-3 text-white bg-pink-500 rounded-xl hover:bg-pink-600 transition duration-200 disabled:opacity-50"
                 >
-                  {isSaving ? 'Saving...' : 'Save'}
+                  {isSaving ? "Saving..." : "Save"}
                 </button>
               </div>
             </form>
           ) : (
-            <div className="mt-6 text-center">
-              <h3 className="text-xl font-semibold text-gray-800">{displayName}</h3>
-              <p className="text-sm text-gray-600 italic">{bio || 'No bio added'}</p>
+            <div className="text-center">
+              <h3 className="text-2xl font-semibold text-gray-800">{displayName}</h3>
+              <p className="mt-1 text-sm text-gray-600 italic">{bio || "No bio added"}</p>
               <p className="mt-2 text-sm text-gray-600">{currentUser?.email}</p>
-              <p className="mt-2 text-sm text-gray-600">{title || 'Not specified'}</p>
+              <p className="mt-2 text-sm text-gray-600">{title || "Not specified"}</p>
               <button
                 onClick={() => setIsEditing(true)}
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+                className="mt-5 px-6 py-3 text-white bg-indigo-400 rounded-xl hover:bg-pink-600 transition duration-200"
               >
                 Edit Profile
               </button>
             </div>
           )}
+
+          {error && <p className="text-red-500 text-center">{error}</p>}
+          {success && <p className="text-green-500 text-center">{success}</p>}
         </div>
       </div>
     </div>

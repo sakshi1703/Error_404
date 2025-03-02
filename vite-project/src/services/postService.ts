@@ -1,4 +1,4 @@
-import { ref, push, set, get, update, query, orderByChild, limitToLast } from 'firebase/database';
+import { ref, push, set, get, update, query, orderByChild, limitToLast,onValue } from 'firebase/database';
 import { database } from '../firebase/config';
 import { Post, Comment } from '../types';
 
@@ -235,4 +235,20 @@ export const searchPosts = async (query: string) => {
     console.error('Error searching posts:', error);
     throw error;
   }
+};
+
+export const listenForComments = (postId: string, callback: (comments: any) => void) => {
+  const commentsRef = ref(database, `comments/${postId}`);
+
+  const unsubscribe = onValue(commentsRef, (snapshot) => {
+    if (!snapshot.exists()) {
+      callback([]);
+      return;
+    }
+
+    const comments = Object.values(snapshot.val());
+    callback(comments);
+  });
+
+  return unsubscribe;
 };
