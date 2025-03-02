@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Users, Lightbulb, BookOpen, Briefcase, PlusCircle, X } from "lucide-react";
+import { Users, Lightbulb, BookOpen, Briefcase, PlusCircle, X, User as UserIcon } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { database } from "../firebase/config";
 import { ref, push, set, serverTimestamp, onValue } from "firebase/database";
 
 interface SidebarProps {
-  groups: { id: string; name: string }[];
-  onFilterChange: (type: string | null) => void;
+  groups?: { id: string; name: string }[];
+  onFilterChange?: (type: string | null) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ groups, onFilterChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ groups = [], onFilterChange = () => {} }) => {
   const { userProfile, currentUser } = useAuth();
   const [myGroups, setMyGroups] = useState<{ id: string; name: string }[]>(groups || []);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -116,7 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({ groups, onFilterChange }) => {
         type: newGroupType,
         createdBy: currentUser.uid,
         createdAt: serverTimestamp(),
-        members: [...members, userProfile.displayName],
+        members: [...members, userProfile?.displayName],
       };
 
       await set(newGroupRef, groupData);
@@ -151,17 +151,21 @@ const Sidebar: React.FC<SidebarProps> = ({ groups, onFilterChange }) => {
 
   return (
     <div className="bg-white rounded-lg shadow p-4 space-y-6">
-      {userProfile && (
+      {currentUser && (
         <div className="flex flex-col items-center text-center">
-          {userProfile.photoURL ? (
-            <img src={userProfile.photoURL} alt={userProfile.displayName} className="h-20 w-20 rounded-full mb-2" />
+          {userProfile?.profilePic ? (
+            <img 
+              src={userProfile.profilePic} 
+              alt={userProfile.displayName || "User Profile"} 
+              className="h-20 w-20 rounded-full mb-2 object-cover" 
+            />
           ) : (
             <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
-              <span className="text-2xl font-semibold text-indigo-600">{userProfile.displayName?.charAt(0) || "U"}</span>
+              <UserIcon className="h-10 w-10 text-indigo-500" />
             </div>
           )}
-          <h2 className="text-lg font-semibold">{userProfile.displayName || "User"}</h2>
-          <p className="text-sm text-gray-500">{userProfile.title || "Member"}</p>
+          <h2 className="text-lg font-semibold">{userProfile?.displayName || "User"}</h2>
+          <p className="text-sm text-gray-500">{userProfile?.title || "Member"}</p>
         </div>
       )}
 
