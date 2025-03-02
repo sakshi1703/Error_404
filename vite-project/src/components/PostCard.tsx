@@ -28,6 +28,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [comments, setComments] = useState<CommentType[]>([]);
   const [commentText, setCommentText] = useState('');
   const [commentCount, setCommentCount] = useState(post.comments || 0);
+  const [authorProfilePic, setAuthorProfilePic] = useState('');
+  const [postImage, setPostImage] = useState('');
   
   // Share modal state
   const [showShareModal, setShowShareModal] = useState(false);
@@ -37,6 +39,58 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [shareUrl, setShareUrl] = useState('');
   const [shareMessage, setShareMessage] = useState('');
   const [showCopiedMessage, setShowCopiedMessage] = useState(false);
+
+  // Fetch author profile picture
+  useEffect(() => {
+    const fetchAuthorProfile = async () => {
+      if (!post.author || !post.author.uid) return;
+      
+      // First try to use the profile pic from the post data
+      if (post.author.photoURL) {
+        setAuthorProfilePic(post.author.photoURL);
+        return;
+      }
+      
+      try {
+        const userRef = ref(database, `users/${post.author.uid}`);
+        const snapshot = await get(userRef);
+        
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          // Try multiple fields where the profile pic might be stored
+          if (userData.profilePic) {
+            setAuthorProfilePic(userData.profilePic);
+          } else if (userData.photoURL) {
+            setAuthorProfilePic(userData.photoURL);
+          } else if (userData.profileImage) {
+            setAuthorProfilePic(userData.profileImage);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching author profile:', error);
+      }
+    };
+    
+    fetchAuthorProfile();
+  }, [post.author]);
+
+  // Set post image - handling both base64 and URL formats
+  useEffect(() => {
+    // Direct base64 string from CreatePostForm
+    if (post.imageBase64) {
+      setPostImage(post.imageBase64);
+      return;
+    }
+    
+    // Legacy imageUrl support
+    if (post.imageUrl) {
+      setPostImage(post.imageUrl);
+      return;
+    }
+    
+    // No image available
+    setPostImage('');
+  }, [post.imageBase64, post.imageUrl]);
 
   useEffect(() => {
     if (showComments) {
@@ -59,7 +113,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       // Generate share URL based on post ID
       setShareUrl(`${window.location.origin}/post/${post.id}`);
       
-      // Fetch user's connections
+      // Fetch user's connections with profile pics
       const fetchConnections = async () => {
         try {
           const connectionsRef = ref(database, `users/${currentUser.uid}/connections`);
@@ -67,12 +121,44 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           
           if (snapshot.exists()) {
             const connectionsData = snapshot.val();
-            const connectionsList = Object.entries(connectionsData).map(([id, data]: [string, any]) => ({
-              id,
-              name: data.name,
-              profilePic: data.profilePic,
-              type: 'connection' as const
-            }));
+            const connectionPromises = Object.entries(connectionsData).map(async ([id, data]: [string, any]) => {
+              // Check if profilePic exists in the connection data
+              if (data.profilePic) {
+                return {
+                  id,
+                  name: data.name,
+                  profilePic: data.profilePic,
+                  type: 'connection' as const
+                };
+              }
+              
+              // If not, try to fetch the user profile to get their profile pic
+              try {
+                const userRef = ref(database, `users/${id}`);
+                const userSnapshot = await get(userRef);
+                
+                if (userSnapshot.exists()) {
+                  const userData = userSnapshot.val();
+                  return {
+                    id,
+                    name: data.name || userData.displayName || 'Unknown',
+                    profilePic: userData.profilePic || userData.photoURL || '',
+                    type: 'connection' as const
+                  };
+                }
+              } catch (error) {
+                console.error(`Error fetching profile for user ${id}:`, error);
+              }
+              
+              // Default return if profile pic cannot be fetched
+              return {
+                id,
+                name: data.name,
+                type: 'connection' as const
+              };
+            });
+            
+            const connectionsList = await Promise.all(connectionPromises);
             setConnections(connectionsList);
           }
         } catch (error) {
@@ -105,6 +191,12 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     }
   }, [showShareModal, currentUser, post.id]);
 
+  // Function to generate profile pic placeholder for users without photos
+  const getInitialsAvatar = (name: string) => {
+    if (!name) return 'U';
+    return name.charAt(0).toUpperCase();
+  };
+
   const handleLike = async () => {
     if (!currentUser || liked) return;
     try {
@@ -130,7 +222,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         currentUser.uid,
         commentText,
         currentUser.displayName || 'Anonymous',
-        currentUser.photoURL || ''
+        userProfile?.profilePic || currentUser.photoURL || ''
       );
       setCommentText('');
       setCommentCount(prev => prev + 1);
@@ -193,7 +285,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             from: {
               uid: currentUser.uid,
               name: userProfile?.displayName || 'A user',
-              profilePic: userProfile?.profilePic || ''
+              profilePic: userProfile?.profilePic || currentUser.photoURL || ''
             },
             postId: post.id,
             message: shareMessage,
@@ -216,21 +308,28 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     <div className="bg-white rounded-xl shadow-lg mb-6 overflow-hidden transition-all duration-200 hover:shadow-xl">
       <div className="p-6">
         <div className="flex items-center mb-4">
-          {post.author.profilePic ? (
-            <img 
-              src={post.author.profilePic} 
-              alt={post.author.name} 
-              className="h-10 w-10 rounded-full mb-2 object-cover" 
-            />
-          ) : (
-            <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
-              <UserIcon className="h-5 w-5 text-indigo-500" />
-            </div>
+          {post.author && (
+            authorProfilePic ? (
+              <img 
+                src={authorProfilePic} 
+                alt={post.author.name || "Unknown User"}
+                className="h-12 w-12 rounded-full object-cover border-2 border-indigo-100"
+                onError={(e) => {
+                  // If image fails to load, set to default avatar
+                  const target = e.target as HTMLImageElement;
+                  target.onerror = null;
+                  target.src = '/default-avatar.png';
+                }}
+              />
+            ) : (
+              <div className="h-12 w-12 rounded-full flex items-center justify-center bg-indigo-500 text-white font-bold text-xl border-2 border-indigo-100">
+                {getInitialsAvatar(post.author.name)}
+              </div>
+            )
           )}
-
           <div className="ml-4">
-            <h3 className="font-semibold text-lg text-gray-800">{post.author.name}</h3>
-            <p className="text-sm text-gray-500">{post.author.title}</p>
+            <h3 className="font-semibold text-lg text-gray-800">{post.author?.name || "Unknown User"}</h3>
+            <p className="text-sm text-gray-500">{post.author?.title || ""}</p>
             <span className="text-xs text-gray-400">
               {moment(post.timestamp).fromNow()}
             </span>
@@ -238,6 +337,23 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </div>
 
         <p className="text-gray-700 mb-4 leading-relaxed">{post.content}</p>
+
+        {/* Display post image if available - handles base64 images */}
+        {postImage && (
+          <div className="mb-6 rounded-lg overflow-hidden">
+            <img 
+              src={postImage} 
+              alt="Post attachment" 
+              className="w-full h-auto max-h-96 object-contain"
+              onError={(e) => {
+                // If image fails to load, hide it
+                const target = e.target as HTMLImageElement;
+                target.onerror = null;
+                target.style.display = 'none';
+              }}
+            />
+          </div>
+        )}
 
         <div className="flex items-center justify-between text-gray-600 text-sm mb-4">
           <div className="flex items-center space-x-4">

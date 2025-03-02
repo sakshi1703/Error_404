@@ -12,15 +12,19 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onPostCreated }) => {
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
   const [postType, setPostType] = useState<'idea' | 'resource' | ''>('');
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!currentUser || !userProfile || !content.trim()) return;
-
+  
+    if (!currentUser || !userProfile || !content.trim()) {
+      console.error('User not logged in or content is empty');
+      return;
+    }
+  
     setIsSubmitting(true);
-
+  
     try {
       // Process tags
       const tagList = tags
@@ -28,28 +32,42 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onPostCreated }) => {
         .map(tag => tag.trim())
         .filter(tag => tag)
         .map(tag => (tag.startsWith('#') ? tag : `#${tag}`));
-
+  
+      console.log('Tags processed:', tagList);
+  
+      // Log the image Base64 string (for debugging)
+      if (imageBase64) {
+        console.log('Image Base64 string:', imageBase64.substring(0, 50) + '...');
+      } else {
+        console.log('No image uploaded');
+      }
+  
+      // Create post with image as Base64 string
       await createPost(
         currentUser.uid,
         content,
-        userProfile.displayName,
-        userProfile.title || '',
-        userProfile.photoURL || '',
+        userProfile.displayName || 'Anonymous', // Fallback to 'Anonymous'
+        userProfile.title || '', // Fallback to empty string
+        userProfile.photoURL || '', // Fallback to empty string
         tagList,
-        postType
+        postType,
+        imageBase64 // Pass the Base64 image string
       );
-
+  
+      console.log('Post created successfully in Firestore');
+  
       // Clear input fields
       setContent('');
       setTags('');
       setPostType('');
-
+      setImageBase64(null);
+  
       // Close the form
       document.getElementById('post-form-details')?.classList.add('hidden');
-
+  
       // Notify user
       alert('Post added successfully!');
-
+  
       // Trigger parent update
       onPostCreated();
     } catch (error) {
@@ -59,7 +77,28 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onPostCreated }) => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        // Convert the image to a Base64 string
+        const base64String = reader.result as string;
+        console.log('Image converted to Base64:', base64String.substring(0, 50) + '...'); // Log first 50 chars
+        setImageBase64(base64String);
+      };
+
+      reader.onerror = () => {
+        console.error('Error reading file:', reader.error);
+      };
+
+      reader.readAsDataURL(file); // Read the file as a data URL (Base64)
+    }
+  };
+
   if (!currentUser) {
+    console.error('User not logged in');
     return null;
   }
 
@@ -165,6 +204,29 @@ const CreatePostForm: React.FC<CreatePostFormProps> = ({ onPostCreated }) => {
                 <span className="ml-2">None</span>
               </label>
             </div>
+          </div>
+
+          {/* Image Upload Input */}
+          <div>
+            <label htmlFor="post-image" className="block text-sm font-medium text-gray-700">
+              Upload Image (Optional)
+            </label>
+            <input
+              type="file"
+              id="post-image"
+              accept="image/*"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              onChange={handleImageChange}
+            />
+            {imageBase64 && (
+              <div className="mt-2">
+                <img
+                  src={imageBase64}
+                  alt="Preview"
+                  className="w-32 h-32 object-cover rounded-md"
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end">
