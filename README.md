@@ -71,7 +71,7 @@ The app will run locally. Check the terminal output for the URL.
    ```bash
    npm run build
    ```  
-2. Upload the `/dist` folder to [Netlify](https://app.netlify.com/)  
+2. Upload the `/dist` folder to [Netlify]([https://app.netlify.com](https://tiny-brioche-c77d15.netlify.app/)/)  
 OR  
    - Link your GitHub repository to Netlify for automatic deployment.  
 
